@@ -1,0 +1,1616 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Going Deep with Morgan</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --card:#121420;
+      --card2:#0f111a;
+      --text:#e9ecf1;
+      --muted:#aab2c0;
+      --line:#252a3a;
+      --accent:#7c5cff;
+      --accent2:#20c997;
+      --danger:#ff4d6d;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 25% -10%, rgba(124,92,255,.25), transparent 55%),
+                  radial-gradient(900px 700px at 90% 10%, rgba(32,201,151,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    button, input, select, textarea{
+      font:inherit;
+      color:inherit;
+    }
+    a{color:inherit}
+    .wrap{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      padding: env(safe-area-inset-top) 14px env(safe-area-inset-bottom);
+      gap:14px;
+    }
+
+    /* Slim settings bar */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(11,12,16,.85), rgba(11,12,16,.55));
+      border-bottom: 1px solid rgba(37,42,58,.55);
+      border-radius: 0 0 16px 16px;
+      margin: 0 -14px;
+      padding: 10px 14px;
+    }
+    .topbar-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .logo{
+      width:26px;height:26px;border-radius:8px;
+      background: conic-gradient(from 180deg, var(--accent), var(--accent2), var(--accent));
+      box-shadow: 0 8px 30px rgba(124,92,255,.25);
+      flex:0 0 auto;
+    }
+    .brand h1{
+      font-size:14px;
+      margin:0;
+      letter-spacing:.2px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(37,42,58,.85);
+      background: rgba(18,20,32,.65);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .08s ease, border-color .12s ease, background .12s ease;
+    }
+    .pill:active{transform: translateY(1px)}
+    .pill:hover{border-color: rgba(124,92,255,.65)}
+    .pill .dot{
+      width:8px;height:8px;border-radius:99px;background: var(--accent);
+      box-shadow:0 0 0 3px rgba(124,92,255,.18);
+    }
+    .pill.secondary .dot{background: var(--accent2); box-shadow:0 0 0 3px rgba(32,201,151,.16)}
+    .pill.danger .dot{background: var(--danger); box-shadow:0 0 0 3px rgba(255,77,109,.16)}
+
+    .settings{
+      margin-top:10px;
+      display:none;
+      gap:12px;
+    }
+    .settings.open{display:grid}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 820px){
+      .grid{grid-template-columns: 1.2fr .8fr}
+    }
+    .panel{
+      border:1px solid rgba(37,42,58,.85);
+      background: rgba(18,20,32,.55);
+      border-radius: 16px;
+      padding:12px;
+    }
+    .panel h2{
+      margin:0 0 8px;
+      font-size:12px;
+      letter-spacing:.25px;
+      color: var(--muted);
+      text-transform:uppercase;
+    }
+    .row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width: 160px;
+      flex:1 1 auto;
+    }
+    .label{
+      font-size:12px;
+      color: var(--muted);
+    }
+    select, input[type="range"], textarea{
+      width:100%;
+    }
+    select, textarea{
+      background: rgba(15,17,26,.75);
+      border:1px solid rgba(37,42,58,.9);
+      border-radius: 12px;
+      padding:10px 10px;
+      outline:none;
+    }
+    select:focus, textarea:focus{
+      border-color: rgba(124,92,255,.8);
+      box-shadow: 0 0 0 3px rgba(124,92,255,.15);
+    }
+    .toggles{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(37,42,58,.85);
+      background: rgba(15,17,26,.55);
+      cursor:pointer;
+      user-select:none;
+      flex:1 1 190px;
+      min-width:190px;
+    }
+    .toggle input{accent-color: var(--accent); width:16px;height:16px}
+    .toggle .small{font-size:12px;color:var(--muted); margin-left:auto}
+
+    /* Main card area */
+    .main{
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 0 90px; /* leave room for bottom nav */
+    }
+    .card{
+      width:min(860px, 100%);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(18,20,32,.85), rgba(15,17,26,.75));
+      border: 1px solid rgba(37,42,58,.9);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      position:relative;
+      overflow:hidden;
+      touch-action: pan-y; /* allow vertical scroll, we handle horizontal swipe */
+    }
+    .card:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(650px 240px at 10% 0%, rgba(124,92,255,.20), transparent 55%),
+        radial-gradient(650px 240px at 90% 10%, rgba(32,201,151,.14), transparent 55%);
+      pointer-events:none;
+      filter: blur(0px);
+    }
+    .card-inner{position:relative; z-index:1}
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .chiprow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    .chip{
+      font-size:12px;
+      padding:7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(37,42,58,.95);
+      background: rgba(11,12,16,.35);
+      color: var(--muted);
+    }
+    .chip strong{color:var(--text); font-weight:700}
+    .chip.spicy{
+      border-color: rgba(255,77,109,.45);
+      color: rgba(255,200,210,.95);
+      background: rgba(255,77,109,.08);
+    }
+    .q{
+      font-size: 22px;
+      line-height: 1.25;
+      margin: 10px 0 12px;
+      letter-spacing: .1px;
+      font-weight:800;
+    }
+    @media (max-width: 480px){
+      .q{font-size: 20px}
+    }
+    .sub{
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.35;
+      margin:0 0 14px;
+    }
+
+    /* Solo answer */
+    .answerWrap{display:none; margin-top: 10px}
+    .answerWrap.show{display:block}
+    .answerWrap .label{margin: 0 0 6px}
+    textarea{
+      min-height: 108px;
+      resize: vertical;
+    }
+
+    /* Bottom nav (persistent) */
+    .bottomnav{
+      position: fixed;
+      left: 0; right: 0;
+      bottom: 0;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(11,12,16,.92), rgba(11,12,16,.55));
+      border-top: 1px solid rgba(37,42,58,.55);
+      backdrop-filter: blur(10px);
+      display:flex;
+      justify-content:center;
+      z-index:20;
+    }
+    .navinner{
+      width: min(860px, 100%);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .btn{
+      border:1px solid rgba(37,42,58,.95);
+      background: rgba(18,20,32,.75);
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight:800;
+      cursor:pointer;
+      user-select:none;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition: transform .08s ease, border-color .12s ease, background .12s ease;
+      min-width: 120px;
+      justify-content:center;
+    }
+    .btn:hover{border-color: rgba(124,92,255,.7)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      border-color: rgba(124,92,255,.65);
+      background: rgba(124,92,255,.14);
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .tiny{
+      font-size:12px;
+      color: var(--muted);
+      font-weight:600;
+    }
+    .centerstatus{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:2px;
+      min-width: 160px;
+      text-align:center;
+    }
+
+    /* Export button bottom-right */
+    .exportFab{
+      position: fixed;
+      right: 14px;
+      bottom: calc(86px + env(safe-area-inset-bottom)); /* above bottom nav */
+      z-index: 30;
+    }
+    .fab{
+      border:1px solid rgba(37,42,58,.95);
+      background: rgba(18,20,32,.80);
+      border-radius: 999px;
+      padding: 12px 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.45);
+      cursor:pointer;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+    }
+    .fab:hover{border-color: rgba(32,201,151,.75)}
+    .fab .icon{
+      width:10px;height:10px;border-radius:99px;background: var(--accent2);
+      box-shadow: 0 0 0 3px rgba(32,201,151,.16);
+    }
+
+    /* Modal */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:flex-end;
+      justify-content:center;
+      z-index: 100;
+      padding: 14px;
+    }
+    .modalBack.open{display:flex}
+    .modal{
+      width: min(860px, 100%);
+      border-radius: 18px;
+      border:1px solid rgba(37,42,58,.95);
+      background: rgba(18,20,32,.92);
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+    .modalHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:8px;
+    }
+    .modalHead h3{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .modalActions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+    .btn.small{padding:10px 12px; border-radius: 14px; min-width:auto; font-weight:900}
+    pre{
+      margin:10px 0 0;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(11,12,16,.55);
+      border:1px solid rgba(37,42,58,.85);
+      max-height: 42vh;
+      overflow:auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: rgba(233,236,241,.95);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    /* Hint bar */
+    .hint{
+      width:min(860px, 100%);
+      color: var(--muted);
+      font-size:12px;
+      text-align:center;
+      padding: 0 10px;
+    }
+    .kbd{
+      border: 1px solid rgba(37,42,58,.85);
+      background: rgba(18,20,32,.55);
+      border-radius: 10px;
+      padding: 2px 7px;
+      font-weight:800;
+      color: var(--text);
+    }
+  </style>
+</head>
+
+<body>
+  <!--
+    NOTE / REFERENCE:
+    
+
+    Paste original code reference below if desired:
+    ==================================================
+    (your original base HTML/JS reference here)
+    ==================================================
+  -->
+
+  <div class="wrap">
+    <header class="topbar">
+      <div class="topbar-row">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <h1>Going Deep with Morgan</h1>
+        </div>
+        <button class="pill" id="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel">
+          <span class="dot" aria-hidden="true"></span>
+          <span id="settingsToggleText">Show Settings</span>
+        </button>
+      </div>
+
+      <div class="settings" id="settingsPanel">
+        <div class="grid">
+          <div class="panel">
+            <h2>Session</h2>
+            <div class="row">
+              <div class="field">
+                <div class="label">Mode</div>
+                <select id="mode">
+                  <option value="Group" selected>Group</option>
+                  <option value="solo">Solo</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <div class="label">Level</div>
+                <select id="level">
+                  <option value="ice" selected>Level 1 — Ice Breakers</option>
+                  <option value="confess">Level 2 — Confessions</option>
+                  <option value="deep">Level 3 — Going Deep</option>
+                  <option value="challenge">Wild — Challenges</option>
+                  <option value="all">All (Mixed)</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <div class="label">Draw method</div>
+                <select id="drawMethod">
+                  <option value="random" selected>Random (default)</option>
+                  <option value="sequential">Sequential (per category order)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <div class="field">
+                <div class="label">Spicy intensity (max allowed)</div>
+                <input id="spicyRange" type="range" min="0" max="3" value="1" />
+                <div class="tiny">0 = none • 1 = mild • 2 = medium • 3 = high</div>
+              </div>
+              <div class="field">
+                <div class="label">Filters</div>
+                <div class="toggles">
+                  <label class="toggle">
+                    <input id="allowSpicy" type="checkbox" checked />
+                    <span>Allow spicy questions</span>
+                    <span class="small" id="allowSpicyState">On</span>
+                  </label>
+
+                  <label class="toggle">
+                    <input id="avoidRepeats" type="checkbox" checked />
+                    <span>Avoid repeats (per session)</span>
+                    <span class="small" id="avoidRepeatsState">On</span>
+                  </label>
+
+                  <label class="toggle">
+                    <input id="logSession" type="checkbox" checked />
+                    <span>Log shown cards</span>
+                    <span class="small" id="logSessionState">On</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <button class="btn small" id="resetSession" type="button">
+                Reset Session
+              </button>
+              <div class="tiny">
+                Tip: swipe back and forth to navigate questions.
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>A message from Morgan...</h2>
+            <div class="tiny" style="line-height:1.45">
+            	I hope you take this time as an invitation to slow down and look inward—to notice what you’re carrying, what you’re avoiding, and what you’re ready to share. Connection rarely comes from perfect words; it comes from presence, curiosity, and the willingness to be seen.<br/>
+              	We are only here for a brief moment in the grand scheme of things, and the time we’re given is shaped by how intentionally we show up for one another.<br/>
+              	Every person around you has lived a life you can’t fully see—full of private joys, losses, fears, and hopes that have quietly shaped who they are today.<br/>
+		Let that be a reminder to lead with kindness, patience, and empathy, even when it feels undeserved or inconvenient.
+            </div>
+            <div style="height:10px"></div>
+            <div class="tiny" style="line-height:1.45; color: rgba(233,236,241,.9)">
+              My hope is that these moments spark conversations that go beyond the surface—conversations that leave you feeling more understood, more open, and more connected than before.
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="card" id="card">
+        <div class="card-inner">
+          <div class="meta">
+            <div class="chiprow">
+              <div class="chip" id="chipLevel"><strong>Level</strong>: Ice Breakers</div>
+              <div class="chip" id="chipCategory"><strong>Category</strong>: Ice Breakers</div>
+              <div class="chip spicy" id="chipSpicy" style="display:none"><strong>Spicy</strong>: 0</div>
+            </div>
+            <div class="chip" id="chipCount"><strong>Card</strong>: 0</div>
+          </div>
+
+          <div class="q" id="questionText">Tap Next to begin.</div>
+          <div class="sub" id="questionSub">
+            Your session is local to this device unless you export it.
+          </div>
+
+          <div class="answerWrap" id="answerWrap">
+            <div class="label">Solo answer (saved for this card)</div>
+            <textarea id="answerBox" placeholder="Type your answer here..."></textarea>
+            <div class="tiny" id="answerHint" style="margin-top:6px">
+              Saved automatically. Included in Export Session.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint" id="hint">
+        Swipe to Navigate
+      </div>
+    </main>
+
+    <div class="exportFab">
+      <button class="fab" id="exportBtn" type="button" title="Export Session">
+        <span class="icon" aria-hidden="true"></span>
+        Export Session
+      </button>
+    </div>
+
+    <nav class="bottomnav" aria-label="Navigation">
+      <div class="navinner">
+        <button class="btn" id="backBtn" type="button" disabled>← Back</button>
+
+        <div class="centerstatus">
+          <div class="tiny" id="statusLine">Ready</div>
+          <div class="tiny" id="poolLine">Pool: —</div>
+        </div>
+
+        <button class="btn primary" id="nextBtn" type="button">Next →</button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modalBack" id="modalBack" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modalHead">
+        <h3 id="modalTitle">Export Session (JSON)</h3>
+        <div class="modalActions">
+          <button class="btn small" id="copyExport" type="button">Copy</button>
+          <button class="btn small" id="downloadExport" type="button">Download</button>
+          <button class="btn small" id="closeModal" type="button">Close</button>
+        </div>
+      </div>
+      <div class="tiny" style="color: var(--muted); line-height:1.45">
+        Includes: settings, shown-card log, and (Solo) answers keyed by stable id with timestamps.
+      </div>
+      <pre id="exportPre"></pre>
+    </div>
+  </div>
+
+  <script>
+    /***********************************************************************
+     * DATA
+     * - Level 1 Ice Breakers, Level 2 Confessions, Level 3 Going Deep, Challenges.
+     * - I added 50 prompts per category.
+     ***********************************************************************/
+
+    const makeQ = (category, text, spicyLevel=0) => ({ category, text, spicyLevel });
+
+    // 50 Ice Breakers (mostly spicyLevel 0–1)
+    const ICE_BREAKERS = [
+      makeQ("Ice Breakers","What’s one small thing that made you smile today?",0),
+      makeQ("Ice Breakers","If you could relive one day from the last year, which one and why?",0),
+      makeQ("Ice Breakers","What’s your ideal “do-nothing” evening?",0),
+      makeQ("Ice Breakers","What’s a hobby you’ve always wanted to try?",0),
+      makeQ("Ice Breakers","What’s your go-to comfort movie or show?",0),
+      makeQ("Ice Breakers","What’s the best compliment you’ve received recently?",0),
+      makeQ("Ice Breakers","What’s a food you used to dislike but now love?",0),
+      makeQ("Ice Breakers","If your week had a theme song, what would it be?",0),
+      makeQ("Ice Breakers","What’s a smell that instantly brings back a memory?",0),
+      makeQ("Ice Breakers","What’s a tiny luxury you really appreciate?",0),
+      makeQ("Ice Breakers","Coffee/tea/water—what’s your ‘default’ drink and why?",0),
+      makeQ("Ice Breakers","What’s your favorite season—and what do you love about it?",0),
+      makeQ("Ice Breakers","What’s a book, game, or app you’ve been into lately?",0),
+      makeQ("Ice Breakers","Would you rather have a perfect weekend at home or a surprise day trip?",0),
+      makeQ("Ice Breakers","What’s a place you’d happily visit again?",0),
+      makeQ("Ice Breakers","What’s a skill you’re proud you learned?",0),
+      makeQ("Ice Breakers","What’s your ‘signature’ snack?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of weather?",0),
+      makeQ("Ice Breakers","If you could instantly master one instrument, which would you pick?",0),
+      makeQ("Ice Breakers","What’s the best meal you’ve had in the last month?",0),
+      makeQ("Ice Breakers","What’s a little routine that helps you feel grounded?",0),
+      makeQ("Ice Breakers","What’s a random fact you find fascinating?",0),
+      makeQ("Ice Breakers","What’s the most ‘you’ playlist vibe: chill, hype, nostalgic, or eclectic?",0),
+      makeQ("Ice Breakers","What’s your favorite way to celebrate good news?",0),
+      makeQ("Ice Breakers","What’s something you wish more people asked you about?",0),
+      makeQ("Ice Breakers","What’s a funny harmless habit you have?",0),
+      makeQ("Ice Breakers","If you could have a pet that’s not typical, what would it be?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of dessert?",0),
+      makeQ("Ice Breakers","What’s the best ‘under $20’ purchase you’ve made recently?",0),
+      makeQ("Ice Breakers","What’s your favorite way to spend a lazy Sunday?",0),
+      makeQ("Ice Breakers","Are you more of a planner or a wing-it person?",0),
+      makeQ("Ice Breakers","Given the choice, which person dead or alive would you like to share dinner with?",0),
+      makeQ("Ice Breakers","Before making a phone call do you rehearse what you are going to say?",0),
+      makeQ("Ice Breakers","Would you like to be famous? In what way?",0),
+      makeQ("Ice Breakers","What would you call a perfect day to you?",0),
+      makeQ("Ice Breakers","When did you last sing to someone else?",0),
+      makeQ("Ice Breakers","Do you think I like to read?",0),
+      makeQ("Ice Breakers","If you were able to live to 90 and could choose between having the mind or body of 30 year old you, which would you choose?",0),
+      makeQ("Ice Breakers","Do you have a secret hunch about how you will die?",0),
+      makeQ("Ice Breakers","Name 3 things you think we have in common.",0),
+      makeQ("Ice Breakers","What in our relationship are you most grateful for?",0),
+      makeQ("Ice Breakers","What do you think a suitable career, that isn't my current one, would be for me?",0),
+      makeQ("Ice Breakers","What do you think your most defining characteristic is?",0),
+      makeQ("Ice Breakers","If you could wake up tomorrow having gained one quality or ability what would it be?",0),
+      makeQ("Ice Breakers","What is your greatest accomplishment?",0),
+      makeQ("Ice Breakers","What do you like about yourself?",0),
+      makeQ("Ice Breakers","Do you think I was popular in highschool?",0),
+      makeQ("Ice Breakers","Do I look like I like spicy food?",0),
+      makeQ("Ice Breakers","What, if anything, do you consider too serious to be joked about?",0),
+      makeQ("Ice Breakers","Your house, containing everything you own catches fire. After your loved ones and pets are safe, what one thing do you save?",0),
+      makeQ("Ice Breakers","Who do you admire?",0),
+      makeQ("Ice Breakers","What's a phrase you wish people would stop saying?",0),
+      makeQ("Ice Breakers","Based on what you already know about me, give me a Netflix recommendation.",0),
+      makeQ("Ice Breakers","What’s one small thing that made you smile today?",0),
+      makeQ("Ice Breakers","If you could relive one day from the last year, which one and why?",0),
+      makeQ("Ice Breakers","What’s your ideal do-nothing evening?",0),
+      makeQ("Ice Breakers","What’s a hobby you’ve always wanted to try?",0),
+      makeQ("Ice Breakers","What’s your go-to comfort movie or show?",0),
+      makeQ("Ice Breakers","What’s the best compliment you’ve received recently?",0),
+      makeQ("Ice Breakers","What’s a food you used to dislike but now love?",0),
+      makeQ("Ice Breakers","If your week had a theme song, what would it be?",0),
+      makeQ("Ice Breakers","What’s a smell that instantly brings back a memory?",0),
+      makeQ("Ice Breakers","What’s a tiny luxury you really appreciate?",0),
+      makeQ("Ice Breakers","Coffee, tea, or water — what’s your default drink and why?",0),
+      makeQ("Ice Breakers","What’s your favorite season and what do you love about it?",0),
+      makeQ("Ice Breakers","What’s a book, game, or app you’ve been into lately?",0),
+      makeQ("Ice Breakers","Would you rather have a perfect weekend at home or a surprise day trip?",0),
+      makeQ("Ice Breakers","What’s a place you’d happily visit again?",0),
+      makeQ("Ice Breakers","What’s a skill you’re proud you learned?",0),
+      makeQ("Ice Breakers","What’s your signature snack?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of weather?",0),
+      makeQ("Ice Breakers","If you could instantly master one instrument, which would you pick?",0),
+      makeQ("Ice Breakers","What’s the best meal you’ve had in the last month?",0),
+      makeQ("Ice Breakers","What’s a little routine that helps you feel grounded?",0),
+      makeQ("Ice Breakers","What’s a random fact you find fascinating?",0),
+      makeQ("Ice Breakers","What’s the most ‘you’ playlist vibe: chill, hype, nostalgic, or eclectic?",0),
+      makeQ("Ice Breakers","What’s your favorite way to celebrate good news?",0),
+      makeQ("Ice Breakers","What’s something you wish more people asked you about?",0),
+      makeQ("Ice Breakers","What’s a funny harmless habit you have?",0),
+      makeQ("Ice Breakers","If you could have a pet that’s not typical, what would it be?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of dessert?",0),
+      makeQ("Ice Breakers","What’s the best under $20 purchase you’ve made recently?",0),
+      makeQ("Ice Breakers","What’s your favorite way to spend a lazy Sunday?",0),
+      makeQ("Ice Breakers","Are you more of a planner or a wing-it person?",0),
+      makeQ("Ice Breakers","What’s a small tradition you’d like to start?",0),
+      makeQ("Ice Breakers","What’s a movie you think everyone should see once?",0),
+      makeQ("Ice Breakers","What’s your perfect sandwich or wrap?",0),
+      makeQ("Ice Breakers","What’s a childhood snack you still miss?",0),
+      makeQ("Ice Breakers","What’s a simple thing that makes a day feel special?",0),
+      makeQ("Ice Breakers","What’s one thing you’re looking forward to in the next month?",0),
+      makeQ("Ice Breakers","If you had to pick a theme for your life right now, what would it be?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of compliment to receive: looks, effort, or personality?",0),
+      makeQ("Ice Breakers","What’s a place you feel most relaxed?",0),
+      makeQ("Ice Breakers","What’s your favorite small-talk question that isn’t boring?",0),
+      makeQ("Ice Breakers","What’s your favorite board game or party game?",0),
+      makeQ("Ice Breakers","What’s your current comfort song?",0),
+      makeQ("Ice Breakers","If you could swap lives with a fictional character for a day, who?",0),
+      makeQ("Ice Breakers","What’s a talent you secretly wish you had?",0),
+      makeQ("Ice Breakers","What’s the nicest thing you’ve done for yourself this week?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of date: cozy, adventurous, fancy, or goofy?",0),
+      makeQ("Ice Breakers","What’s one thing you find instantly charming in someone?",0),
+      makeQ("Ice Breakers","What’s a green flag you really appreciate?",0),
+      makeQ("Ice Breakers","What’s a small tradition you’d like to start?",0),
+      makeQ("Ice Breakers","What’s a movie you think everyone should see once?",0),
+      makeQ("Ice Breakers","What’s your ‘perfect’ sandwich or wrap?",0),
+      makeQ("Ice Breakers","What’s a childhood snack you still miss?",0),
+      makeQ("Ice Breakers","What’s a simple thing that makes a day feel special?",0),
+      makeQ("Ice Breakers","What’s one thing you’re looking forward to in the next month?",0),
+      makeQ("Ice Breakers","If you had to pick a ‘theme’ for your life right now, what would it be?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of compliment to receive: looks, effort, or personality?",0),
+      makeQ("Ice Breakers","What’s a place you feel most relaxed?",0),
+      makeQ("Ice Breakers","What’s your favorite ‘small talk’ question that isn’t boring?",0),
+      makeQ("Ice Breakers","What’s your favorite board game or party game?",0),
+      makeQ("Ice Breakers","Given the choice, which person dead or alive would you like to share dinner with?",0),
+      makeQ("Ice Breakers","Before making a phone call do you rehearse what you are going to say?",0),
+      makeQ("Ice Breakers","Would you like to be famous? In what way?",0),
+      makeQ("Ice Breakers","What would you call a perfect day to you?",0),
+      makeQ("Ice Breakers","When did you last sing to someone else?",0),
+      makeQ("Ice Breakers","Do you think I like to read?",0),
+      makeQ("Ice Breakers","If you were able to live to 90 and could choose between having the mind or body of 30 year old you, which would you choose?",0),
+      makeQ("Ice Breakers","Do you have a secret hunch about how you will die?",0),
+      makeQ("Ice Breakers","Name 3 things you think we have in common.",0),
+      makeQ("Ice Breakers","What in our relationship are you most grateful for?",0),
+      makeQ("Ice Breakers","What do you think a suitable career, that isn't my current one, would be for me?",0),
+      makeQ("Ice Breakers","What do you think your most defining characteristic is?",0),
+      makeQ("Ice Breakers","If you could wake up tomorrow having gained one quality or ability what would it be?",0),
+      makeQ("Ice Breakers","What is your greatest accomplishment?",0),
+      makeQ("Ice Breakers","What do you like about yourself?",0),
+      makeQ("Ice Breakers","Do you think I was popular in highschool?",0),
+      makeQ("Ice Breakers","Do I look like I like spicy food?",0),
+      makeQ("Ice Breakers","What, if anything, do you consider too serious to be joked about?",0),
+      makeQ("Ice Breakers","Your house, containing everything you own catches fire. after your loved ones and pets are safe, what one thing do you save?",0),
+      makeQ("Ice Breakers","Who do you admire?",0),
+      makeQ("Ice Breakers","What's a phrase you wish people would stop saying?",0),
+      makeQ("Ice Breakers","Based on what you already know about me, give me a netflix recommendation",0),
+      makeQ("Ice Breakers","What’s one small thing that made you smile today ?",0),
+      makeQ("Ice Breakers","If you could relive one day from the last year, which one and why ?",0),
+      makeQ("Ice Breakers","What’s your ideal “do-nothing” evening ?",0),
+      makeQ("Ice Breakers","What’s a hobby you’ve always wanted to try ?",0),
+      makeQ("Ice Breakers","What’s your go-to comfort movie or show ?",0),
+      makeQ("Ice Breakers","What’s the best compliment you’ve received recently ?",0),
+      makeQ("Ice Breakers","What’s a food you used to dislike but now love ?",0),
+      makeQ("Ice Breakers","If your week had a theme song, what would it be ?",0),
+      makeQ("Ice Breakers","What’s a smell that instantly brings back a memory ?",0),
+      makeQ("Ice Breakers","What’s a tiny luxury you really appreciate ?",0),
+      makeQ("Ice Breakers","Coffee/tea/water—what’s your ‘default’ drink and why ?",0),
+      makeQ("Ice Breakers","What’s your favorite season—and what do you love about it ?",0),
+      makeQ("Ice Breakers","What’s a book, game, or app you’ve been into lately ?",0),
+      makeQ("Ice Breakers","Would you rather have a perfect weekend at home or a surprise day trip ?",0),
+      makeQ("Ice Breakers","What’s a place you’d happily visit again ?",0),
+      makeQ("Ice Breakers","What’s a skill you’re proud you learned ?",0),
+      makeQ("Ice Breakers","What’s your ‘signature’ snack ?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of weather ?",0),
+      makeQ("Ice Breakers","If you could instantly master one instrument, which would you pick ?",0),
+      makeQ("Ice Breakers","What’s the best meal you’ve had in the last month ?",0),
+      makeQ("Ice Breakers","What’s a little routine that helps you feel grounded ?",0),
+      makeQ("Ice Breakers","What’s a random fact you find fascinating ?",0),
+      makeQ("Ice Breakers","What’s the most ‘you’ playlist vibe: chill, hype, nostalgic, or eclectic ?",0),
+      makeQ("Ice Breakers","What’s your favorite way to celebrate good news ?",0),
+      makeQ("Ice Breakers","What’s something you wish more people asked you about ?",0),
+      makeQ("Ice Breakers","What’s a funny harmless habit you have ?",0),
+      makeQ("Ice Breakers","If you could have a pet that’s not typical, what would it be ?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of dessert ?",0),
+      makeQ("Ice Breakers","What’s the best ‘under $20’ purchase you’ve made recently ?",0),
+      makeQ("Ice Breakers","What’s your favorite way to spend a lazy Sunday ?",0),
+      makeQ("Ice Breakers","Are you more of a planner or a wing-it person ?",0),
+      makeQ("Ice Breakers","What’s a small tradition you’d like to start ?",0),
+      makeQ("Ice Breakers","What’s a movie you think everyone should see once ?",0),
+      makeQ("Ice Breakers","What’s your ‘perfect’ sandwich or wrap ?",0),
+      makeQ("Ice Breakers","What’s a childhood snack you still miss ?",0),
+      makeQ("Ice Breakers","What’s a simple thing that makes a day feel special ?",0),
+      makeQ("Ice Breakers","What’s one thing you’re looking forward to in the next month ?",0),
+      makeQ("Ice Breakers","If you had to pick a ‘theme’ for your life right now, what would it be ?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of compliment to receive: looks, effort, or personality ?",0),
+      makeQ("Ice Breakers","What’s a place you feel most relaxed ?",0),
+      makeQ("Ice Breakers","What’s your favorite ‘small talk’ question that isn’t boring ?",0),
+      makeQ("Ice Breakers","What’s your favorite board game or party game ?",0),
+      makeQ("Ice Breakers","What’s your current comfort song ?",0),
+      makeQ("Ice Breakers","If you could swap lives with a fictional character for a day, who ?",0),
+      makeQ("Ice Breakers","What’s a talent you secretly wish you had ?",0),
+      makeQ("Ice Breakers","What’s the nicest thing you’ve done for yourself this week ?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of date: cozy, adventurous, fancy, or goofy?",0),
+      makeQ("Ice Breakers","What’s one thing you find instantly charming in someone?",0),
+      makeQ("Ice Breakers","What’s a ‘green flag’ you really appreciate?",0),
+      makeQ("Ice Breakers","What’s your current comfort song?",0),
+      makeQ("Ice Breakers","If you could swap lives with a fictional character for a day, who?",0),
+      makeQ("Ice Breakers","What’s a talent you secretly wish you had?",0),
+      makeQ("Ice Breakers","What’s the nicest thing you’ve done for yourself this week?",0),
+      makeQ("Ice Breakers","What’s your favorite kind of date: cozy, adventurous, fancy, or goofy?",1),
+      makeQ("Ice Breakers","What’s one thing you find instantly charming in someone?",1),
+      makeQ("Ice Breakers","What’s a ‘green flag’ you really appreciate?",1),
+    ];
+
+    // 50 Confessions (0–2, some spicier)
+    const CONFESSIONS = [
+      makeQ("Confessions","What’s something you’ve changed your mind about in the last few years?",0),
+      makeQ("Confessions","What’s a belief you used to have that you’ve outgrown?",0),
+      makeQ("Confessions","What’s a compliment you struggle to accept (even if it’s true)?",0),
+      makeQ("Confessions","What’s a fear you don’t talk about much?",0),
+      makeQ("Confessions","What’s a habit you’re working on improving?",0),
+      makeQ("Confessions","What’s something you wish you were more consistent about?",0),
+      makeQ("Confessions","What’s a moment you felt really proud of yourself (quietly or loudly)?",0),
+      makeQ("Confessions","What’s a mistake you learned a lot from?",0),
+      makeQ("Confessions","What’s a ‘guilty pleasure’ you fully own?",0),
+      makeQ("Confessions","What’s something you tend to overthink?",0),
+      makeQ("Confessions","What’s your biggest time-waster lately?",0),
+      makeQ("Confessions","What’s a boundary you wish you’d set sooner in life?",1),
+      makeQ("Confessions","What’s something you used to be embarrassed about that you’ve made peace with?",0),
+      makeQ("Confessions","When do you feel most confident?",0),
+      makeQ("Confessions","When do you feel most insecure?",1),
+      makeQ("Confessions","What’s a ‘pet peeve’ you know is a little irrational?",0),
+      makeQ("Confessions","What’s something you avoid because it feels uncomfortable (but important)?",1),
+      makeQ("Confessions","What’s a truth about you that surprises people?",0),
+      makeQ("Confessions","What’s something you wish your younger self could hear from you today?",0),
+      makeQ("Confessions","What’s a compliment you wish you heard more often?",0),
+      makeQ("Confessions","What’s a memory you revisit more than you’d like to admit?",0),
+      makeQ("Confessions","What’s your biggest ‘soft spot’—the thing that gets you every time?",0),
+      makeQ("Confessions","What’s a way you’ve grown emotionally in the past year?",0),
+      makeQ("Confessions","What’s something you’re currently avoiding (and why)?",1),
+      makeQ("Confessions","What’s a rule you made for yourself after getting burned once?",1),
+      makeQ("Confessions","What do you need when you’re stressed: solutions, comfort, or space?",0),
+      makeQ("Confessions","What’s a ‘hidden’ talent you downplay?",0),
+      makeQ("Confessions","What’s the last thing you apologized for—and do you still stand by it?",1),
+      makeQ("Confessions","What’s a time you felt misunderstood?",1),
+      makeQ("Confessions","What’s a story you tell that makes you look cool but the truth is funnier?",0),
+      makeQ("Confessions","What’s a small lie you’ve told to avoid awkwardness?",0),
+      makeQ("Confessions","What’s something you wish you could forgive yourself for faster?",1),
+      makeQ("Confessions","What’s your most reliable coping mechanism?",0),
+      makeQ("Confessions","What’s a comfort item you’d keep if you had to downsize your life?",0),
+      makeQ("Confessions","What’s something you find hard to ask for—even when you need it?",1),
+      makeQ("Confessions","What’s your most inconvenient good quality?",0),
+      makeQ("Confessions","What’s a compliment you often think but don’t say out loud?",0),
+      makeQ("Confessions","What’s a kind of attention you secretly enjoy?",1),
+      makeQ("Confessions","What’s your most ‘I know I shouldn’t… but I do’ habit?",1),
+      makeQ("Confessions","What’s something you’ve been curious about romantically but haven’t said out loud?",2),
+      makeQ("Confessions","What’s one thing that helps you feel emotionally safe with someone?",1),
+      makeQ("Confessions","What’s something you need in relationships that you didn’t realize until recently?",1),
+      makeQ("Confessions","What’s a conflict style you fall into when you’re tired or stressed?",1),
+      makeQ("Confessions","What’s a compliment about your body you actually like hearing?",2),
+      makeQ("Confessions","If you could change anything about the way you were raised what would it be?",0),
+      makeQ("Confessions","If a crystal ball could tell you anything about your life, your future or anything else what would you want to know?",0),
+      makeQ("Confessions","Is there something you want in life but are afraid to do? what is holding you back?",0),
+      makeQ("Confessions","What do you value most in a friendship?",0),
+      makeQ("Confessions","What's your most treasured memory?",0),
+      makeQ("Confessions","What's your most awful memory?",0),
+      makeQ("Confessions","If you knew that you had one year to live, no exceptions, what about life would you do differently? why?",0),
+      makeQ("Confessions","What roles do love and affection play in your life?",0),
+      makeQ("Confessions","What compliment means more to you than most people think?",0),
+      makeQ("Confessions","How close and warm is your family? How does it differ from the one you hope to create?",0),
+      makeQ("Confessions","How do you feel about your relationship with your parents?",0),
+      makeQ("Confessions","What do you think are our most important similarities?",0),
+      makeQ("Confessions","Of all the people you know who's death do you think would impact you the most?",0),
+      makeQ("Confessions","Make three true \"I\" statements, ex \"I feel connected\"",0),
+      makeQ("Confessions","What was your first impression of me? How has that changed?",0),
+      makeQ("Confessions","Complete the sentence \"I wish i had someone with whom I could share...\"",0),
+      makeQ("Confessions","What about me do you find strange or unfamiliar?",0),
+      makeQ("Confessions","What is something you have lied to me about? Why did you lie?",0),
+      makeQ("Confessions","What if your least favourite trait within yourself?",0),
+      makeQ("Confessions","If you made a playlist for me which song would be first?",0),
+      makeQ("Confessions","What is the biggest hurdle you have overcome?",0),
+      makeQ("Confessions","What do you think my real life super power is?",0),
+      makeQ("Confessions","What's the last thing you lied to your parents about?",0),
+      makeQ("Confessions","When was the last time you felt lucky to be you?",0),
+      makeQ("Confessions","What is the most attractive quality about me that isn't physical?",0),
+      makeQ("Confessions","If you could write a letter to your younger self before we met, what would you make sure they know?",0),
+      makeQ("Confessions","What are you most excited for today? Big or small",0),
+      makeQ("Confessions","What do you think your younger self needed to hear?",0),
+      makeQ("Confessions","How do you wish you were perceived?",0),
+      makeQ("Confessions","What about me surprises you?",0),
+      makeQ("Confessions","How does someone win your vulnerability?",0),
+      makeQ("Confessions","What’s something you’ve changed your mind about in the last few years?",0),
+      makeQ("Confessions","What’s a belief you used to have that you’ve outgrown?",0),
+      makeQ("Confessions","What’s a compliment you struggle to accept (even if it’s true)?",0),
+      makeQ("Confessions","What’s a fear you don’t talk about much?",0),
+      makeQ("Confessions","What’s a habit you’re working on improving?",0),
+      makeQ("Confessions","What’s something you wish you were more consistent about?",0),
+      makeQ("Confessions","What’s a moment you felt really proud of yourself (quietly or loudly)?",0),
+      makeQ("Confessions","What’s a mistake you learned a lot from?",0),
+      makeQ("Confessions","What’s a ‘guilty pleasure’ you fully own?",0),
+      makeQ("Confessions","What’s something you tend to overthink?",0),
+      makeQ("Confessions","What’s your biggest time-waster lately?",0),
+      makeQ("Confessions","What’s a boundary you wish you’d set sooner in life?",0),
+      makeQ("Confessions","What’s something you used to be embarrassed about that you’ve made peace with?",0),
+      makeQ("Confessions","When do you feel most confident?",0),
+      makeQ("Confessions","When do you feel most insecure?",0),
+      makeQ("Confessions","What’s a ‘pet peeve’ you know is a little irrational?",0),
+      makeQ("Confessions","What’s something you avoid because it feels uncomfortable (but important)?",0),
+      makeQ("Confessions","What’s a truth about you that surprises people?",0),
+      makeQ("Confessions","What’s something you wish your younger self could hear from you today?",0),
+      makeQ("Confessions","What’s a compliment you wish you heard more often?",0),
+      makeQ("Confessions","What’s a memory you revisit more than you’d like to admit?",0),
+      makeQ("Confessions","What’s your biggest ‘soft spot’—the thing that gets you every time?",0),
+      makeQ("Confessions","What’s a way you’ve grown emotionally in the past year?",0),
+      makeQ("Confessions","What’s something you’re currently avoiding (and why)?",0),
+      makeQ("Confessions","What’s a rule you made for yourself after getting burned once?",0),
+      makeQ("Confessions","What do you need when you’re stressed: solutions, comfort, or space?",0),
+      makeQ("Confessions","What’s a ‘hidden’ talent you downplay?",0),
+      makeQ("Confessions","What’s the last thing you apologized for—and do you still stand by it?",0),
+      makeQ("Confessions","What’s a time you felt misunderstood?",0),
+      makeQ("Confessions","What’s a story you tell that makes you look cool but the truth is funnier?",0),
+      makeQ("Confessions","What’s a small lie you’ve told to avoid awkwardness?",0),
+      makeQ("Confessions","What’s something you wish you could forgive yourself for faster?",0),
+      makeQ("Confessions","What’s your most reliable coping mechanism?",0),
+      makeQ("Confessions","What’s a comfort item you’d keep if you had to downsize your life?",0),
+      makeQ("Confessions","What’s something you find hard to ask for—even when you need it?",0),
+      makeQ("Confessions","What’s your most inconvenient good quality?",0),
+      makeQ("Confessions","What’s a compliment you often think but don’t say out loud?",0),
+      makeQ("Confessions","What’s a kind of attention you secretly enjoy?",0),
+      makeQ("Confessions","What’s your most ‘I know I shouldn’t… but I do’ habit?",0),
+      makeQ("Confessions","What’s something you’ve been curious about romantically but haven’t said out loud?",0),
+      makeQ("Confessions","What’s one thing that helps you feel emotionally safe with someone?",0),
+      makeQ("Confessions","What’s something you need in relationships that you didn’t realize until recently?",0),
+      makeQ("Confessions","What’s a conflict style you fall into when you’re tired or stressed?",0),
+      makeQ("Confessions","What’s a compliment about your body you actually like hearing?",0),
+      makeQ("Confessions","What’s a ‘turn-on’ that’s more about vibe than looks?",0),
+      makeQ("Confessions","What’s your most unexpected ‘green flag’ in dating/relationships?",0),
+      makeQ("Confessions","What’s something you’ve learned about love the hard way?",0),
+      makeQ("Confessions","What’s a way you’d like to be pursued or romanced more?",0),
+      makeQ("Confessions","What’s something you wish people understood about you without you explaining?",0),
+      makeQ("Confessions","What’s a ‘turn-on’ that’s more about vibe than looks?",2),
+      makeQ("Confessions","What’s your most unexpected ‘green flag’ in dating/relationships?",1),
+      makeQ("Confessions","What’s something you’ve learned about love the hard way?",1),
+      makeQ("Confessions","What’s a way you’d like to be pursued or romanced more?",2),
+      makeQ("Confessions","What’s something you wish people understood about you without you explaining?",0),
+    ];
+
+    // 50 Going Deep (0–2, reflective)
+    const GOING_DEEP = [
+      makeQ("Going Deep","What does a ‘good life’ mean to you right now?",0),
+      makeQ("Going Deep","What do you want your life to feel like day-to-day?",0),
+      makeQ("Going Deep","What’s something you’re willing to struggle for?",0),
+      makeQ("Going Deep","What part of your personality have you had to protect?",0),
+      makeQ("Going Deep","What do you think you’re here to learn in this season of life?",0),
+      makeQ("Going Deep","What’s one value you refuse to compromise on?",0),
+      makeQ("Going Deep","What’s a relationship lesson you want to carry forward intentionally?",0),
+      makeQ("Going Deep","When do you feel most ‘seen’?",0),
+      makeQ("Going Deep","When do you feel most alone—even around others?",1),
+      makeQ("Going Deep","What do you think you deserve (and do you truly believe it)?",1),
+      makeQ("Going Deep","What’s a wound you’ve healed partially—but still feel sometimes?",1),
+      makeQ("Going Deep","What’s your definition of loyalty?",0),
+      makeQ("Going Deep","What do you wish you could say without being judged?",1),
+      makeQ("Going Deep","What are you afraid would change if you fully believed in yourself?",1),
+      makeQ("Going Deep","What’s something you want to be remembered for?",0),
+      makeQ("Going Deep","What kind of love did you grow up seeing—and how did it shape you?",1),
+      makeQ("Going Deep","What does trust look like in actions (not words)?",0),
+      makeQ("Going Deep","What’s your relationship with control—where do you hold on too tightly?",1),
+      makeQ("Going Deep","What does ‘home’ mean to you?",0),
+      makeQ("Going Deep","What do you need to feel secure in a relationship?",1),
+      makeQ("Going Deep","What does intimacy mean to you beyond sex?",1),
+      makeQ("Going Deep","What’s your biggest hope for the next 5 years?",0),
+      makeQ("Going Deep","What’s your biggest fear for the next 5 years?",1),
+      makeQ("Going Deep","What do you think your future self will thank you for?",0),
+      makeQ("Going Deep","What’s a pattern you’re trying to break in your life?",1),
+      makeQ("Going Deep","What’s a pattern you’re trying to build?",0),
+      makeQ("Going Deep","What’s a belief about yourself you’re ready to upgrade?",1),
+      makeQ("Going Deep","What makes you feel loved when you’re not at your best?",1),
+      makeQ("Going Deep","What’s something you wish you could receive without guilt?",1),
+      makeQ("Going Deep","What’s something you want to give more freely?",0),
+      makeQ("Going Deep","What’s the hardest thing you’ve had to accept about life?",1),
+      makeQ("Going Deep","What’s the most important thing you’ve learned about people?",0),
+      makeQ("Going Deep","What do you need from a partner during conflict?",1),
+      makeQ("Going Deep","What’s your ‘repair ritual’ after a hard conversation?",1),
+      makeQ("Going Deep","What does respect feel like to you?",0),
+      makeQ("Going Deep","What is your relationship with forgiveness?",1),
+      makeQ("Going Deep","When have you felt proudest of how you handled something difficult?",1),
+      makeQ("Going Deep","What’s a dream you’ve postponed—and why?",0),
+      makeQ("Going Deep","If you knew you couldn’t fail, what would you attempt first?",0),
+      makeQ("Going Deep","What does emotional maturity look like to you?",0),
+      makeQ("Going Deep","What’s a non-negotiable need you have that you rarely say out loud?",1),
+      makeQ("Going Deep","What kind of legacy do you want to leave in the people you love?",0),
+      makeQ("Going Deep","What’s one truth you’ve been circling but not naming?",1),
+      makeQ("Going Deep","Where do you feel you ‘perform’ instead of being?",1),
+      makeQ("Going Deep","What’s something you want to be braver about?",1),
+      makeQ("Going Deep","If you were going to be a close friend to me what should I know?",0),
+      makeQ("Going Deep","Share an embarrassing moment from recent life",0),
+      makeQ("Going Deep","Am I like you expected me to be? Why or why not?",0),
+      makeQ("Going Deep","Tell me something out of your comfort zone",0),
+      makeQ("Going Deep","When did you last cry? Why?",0),
+      makeQ("Going Deep","Describe your worst heartbreak. What did it teach you?",0),
+      makeQ("Going Deep","What do you think I need to let go of?",0),
+      makeQ("Going Deep","How can I best be there for you during this chapter in your life?",0),
+      makeQ("Going Deep","What are you trying to prove to yourself?",0),
+      makeQ("Going Deep","Have I ever hurt you? How?",0),
+      makeQ("Going Deep","What song reminds you of me?",0),
+      makeQ("Going Deep","If you were to die tonight with no opportunity to communicate with anyone, what would you regret not telling me? why haven't you told me?",0),
+      makeQ("Going Deep","What is one personality trait your parents passed down to you that you wish they hadn't?",0),
+      makeQ("Going Deep","What is one personality trait your parents passed down that you are glad they did?",0),
+      makeQ("Going Deep","What do you think is the hardest part about loving you?",0),
+      makeQ("Going Deep","What would your younger self not believe about your life today?",0),
+      makeQ("Going Deep","What is the worst non-physical pain you have ever felt?",0),
+      makeQ("Going Deep","What do you think I should know about myself but am unaware of?",0),
+      makeQ("Going Deep","How do you think we compliment each other?",0),
+      makeQ("Going Deep","What do you think is one thing I could do to drastically improve my life?",0),
+      makeQ("Going Deep","What do you think is my biggest weakness?",0),
+      makeQ("Going Deep","Based on what you have learnt today, has your perception of me changed? How?",0),
+      makeQ("Going Deep","What would be the perfect gift for you?",0),
+      makeQ("Going Deep","What would make you feel closer to me?",0),
+      makeQ("Going Deep","How would you describe me to someone who doesn't know me?",0),
+      makeQ("Going Deep","Do you think we met for a reason? What reason?",0),
+      makeQ("Going Deep","What do you think is my biggest fear?",0),
+      makeQ("Going Deep","What do you think I need to hear right now?",0),
+      makeQ("Going Deep","When is the last time you said 'I love you' and meant it?",0),
+      makeQ("Going Deep","What lesson will you take away from our conversation?",0),
+      makeQ("Going Deep","What would you trust me to give advice on? Why?",0),
+      makeQ("Going Deep","When this game is over, what do you want to know more about?",0),
+      makeQ("Going Deep","Do you think everyone has a calling? Do you think I've found mine?",0),
+      makeQ("Going Deep","How can I add more happiness in your life?",0),
+      makeQ("Going Deep","Is there closure you never got to have?",0),
+      makeQ("Going Deep","Which questions were you most afraid to answer?",0),
+      makeQ("Going Deep","Which answer of mine made you happy?",0),
+      makeQ("Going Deep","What has this conversation taught you about yourself?",0),
+      makeQ("Going Deep","What does a ‘good life’ mean to you right now?",0),
+      makeQ("Going Deep","What do you want your life to feel like day-to-day?",0),
+      makeQ("Going Deep","What’s something you’re willing to struggle for?",0),
+      makeQ("Going Deep","What part of your personality have you had to protect?",0),
+      makeQ("Going Deep","What do you think you’re here to learn in this season of life?",0),
+      makeQ("Going Deep","What’s one value you refuse to compromise on?",0),
+      makeQ("Going Deep","What’s a relationship lesson you want to carry forward intentionally?",0),
+      makeQ("Going Deep","When do you feel most ‘seen’?",0),
+      makeQ("Going Deep","When do you feel most alone—even around others?",0),
+      makeQ("Going Deep","What do you think you deserve (and do you truly believe it)?",0),
+      makeQ("Going Deep","What’s a wound you’ve healed partially—but still feel sometimes?",0),
+      makeQ("Going Deep","What’s your definition of loyalty?",0),
+      makeQ("Going Deep","What do you wish you could say without being judged?",0),
+      makeQ("Going Deep","What are you afraid would change if you fully believed in yourself?",0),
+      makeQ("Going Deep","What’s something you want to be remembered for?",0),
+      makeQ("Going Deep","What kind of love did you grow up seeing—and how did it shape you?",0),
+      makeQ("Going Deep","What does trust look like in actions (not words)?",0),
+      makeQ("Going Deep","What’s your relationship with control—where do you hold on too tightly?",0),
+      makeQ("Going Deep","What does ‘home’ mean to you?",0),
+      makeQ("Going Deep","What do you need to feel secure in a relationship?",0),
+      makeQ("Going Deep","What does intimacy mean to you beyond sex?",0),
+      makeQ("Going Deep","What’s your biggest hope for the next 5 years?",0),
+      makeQ("Going Deep","What’s your biggest fear for the next 5 years?",0),
+      makeQ("Going Deep","What do you think your future self will thank you for?",0),
+      makeQ("Going Deep","What’s a pattern you’re trying to break in your life?",0),
+      makeQ("Going Deep","What’s a pattern you’re trying to build?",0),
+      makeQ("Going Deep","What’s a belief about yourself you’re ready to upgrade?",0),
+      makeQ("Going Deep","What makes you feel loved when you’re not at your best?",0),
+      makeQ("Going Deep","What’s something you wish you could receive without guilt?",0),
+      makeQ("Going Deep","What’s something you want to give more freely?",0),
+      makeQ("Going Deep","What’s the hardest thing you’ve had to accept about life?",0),
+      makeQ("Going Deep","What’s the most important thing you’ve learned about people?",0),
+      makeQ("Going Deep","What do you need from a partner during conflict?",0),
+      makeQ("Going Deep","What’s your ‘repair ritual’ after a hard conversation?",0),
+      makeQ("Going Deep","What does respect feel like to you?",0),
+      makeQ("Going Deep","What is your relationship with forgiveness?",0),
+      makeQ("Going Deep","When have you felt proudest of how you handled something difficult?",0),
+      makeQ("Going Deep","What’s a dream you’ve postponed—and why?",0),
+      makeQ("Going Deep","If you knew you couldn’t fail, what would you attempt first?",0),
+      makeQ("Going Deep","What does emotional maturity look like to you?",0),
+      makeQ("Going Deep","What’s a non-negotiable need you have that you rarely say out loud?",0),
+      makeQ("Going Deep","What kind of legacy do you want to leave in the people you love?",0),
+      makeQ("Going Deep","What’s one truth you’ve been circling but not naming?",0),
+      makeQ("Going Deep","Where do you feel you ‘perform’ instead of being?",0),
+      makeQ("Going Deep","What’s something you want to be braver about?",0),
+      makeQ("Going Deep","How do you want to be loved when you’re hurting?",0),
+      makeQ("Going Deep","What does a healthy relationship with ambition look like for you?",0),
+      makeQ("Going Deep","What’s a boundary you want to strengthen this year?",0),
+      makeQ("Going Deep","What would it look like to choose peace more often?",0),
+      makeQ("Going Deep","What’s a desire you’ve minimized that deserves more honesty?",0),
+      makeQ("Going Deep","How do you want to be loved when you’re hurting?",1),
+      makeQ("Going Deep","What does a healthy relationship with ambition look like for you?",0),
+      makeQ("Going Deep","What’s a boundary you want to strengthen this year?",0),
+      makeQ("Going Deep","What would it look like to choose peace more often?",0),
+      makeQ("Going Deep","What’s a desire you’ve minimized that deserves more honesty?",2),
+    ];
+
+    // Challenges — includes some generated + all original questions from the deck
+    // You can paste LEGACY_CHALLENGES below.
+    const LEGACY_CHALLENGES = [
+      // Paste your original challenge cards here, e.g.:
+      // makeQ("Challenges","(Your original challenge text)", 1),
+    ];
+
+    const CHALLENGES_GENERATED = [
+      makeQ("Challenges","Set a 60-second timer: each of you says one thing you appreciate about the other—no repeats.",0),
+      makeQ("Challenges","Do a 2-minute ‘no phones’ reset: stretch, breathe, and make eye contact.",0),
+      makeQ("Challenges","Compliment challenge: give 3 specific compliments (not about looks).",0),
+      makeQ("Challenges","Truth or Toast: share a tiny truth, then take a sip of your drink.",0),
+      makeQ("Challenges","High/Low: share your high and low from this week in one minute each.",0),
+      makeQ("Challenges","Write one sentence about what you want more of in your relationship, then read it out loud.",1),
+      makeQ("Challenges","Plan a dream date in 90 seconds. The other person can only say “yes, and…”.",0),
+      makeQ("Challenges","Ask a follow-up question that starts with “Tell me more about…”",0),
+      makeQ("Challenges","Pick a ‘safe word’ for pausing a conversation and agreeing to reset kindly.",1),
+      makeQ("Challenges","Do a gratitude speed-round: 5 things you’re grateful for—fast.",0),
+      makeQ("Challenges","One minute of eye contact (no talking).",1),
+      makeQ("Challenges","Pick one song: explain why it fits your relationship vibe right now.",0),
+      makeQ("Challenges","Say one apology you’ve been holding back (only if it’s sincere).",1),
+      makeQ("Challenges","Tell a story about a time you felt brave.",0),
+      makeQ("Challenges","Invent a ‘relationship rule’ that would make your life easier.",1),
+      makeQ("Challenges","Play ‘two truths and a wish’ (two true things, one wish for the future).",0),
+      makeQ("Challenges","Share one boundary you want respected this month—and how to do it well.",1),
+      makeQ("Challenges","Make a 3-item ‘date night menu’: starter, main, dessert… but for activities.",0),
+      makeQ("Challenges","Pick a tiny act of service you’ll do tomorrow. Say it out loud.",0),
+      makeQ("Challenges","Hold hands while answering the next question.",1),
+      makeQ("Challenges","Share a ‘red flag’ you’ve worked on in yourself (gently, honestly).",1),
+      makeQ("Challenges","Take turns: say ‘I feel loved when…’ and give 2 examples each.",1),
+      makeQ("Challenges","Create a ‘signal’ for wanting affection that isn’t verbal.",1),
+      makeQ("Challenges","Choose a playful nickname for tonight only.",0),
+      makeQ("Challenge","Show your favorite picture and describe its meaning",0),
+      makeQ("Challenge","We have to express how we really feel about each other",0),
+      makeQ("Challenge","If you have one, ask the question that is on your mind",0),
+      makeQ("Challenge","We have to reveal a secret about ourselves",0),
+      makeQ("Challenge","Call a friend and let them know you care",0),
+      makeQ("Challenge","Call someone and tell them you love them",0),
+      makeQ("Challenge","Text a friend a \"Going Deep\" question. Keep their answer between you and them.",0),
+      makeQ("Challenge","Play the song that has the biggest impact on you right now and explain its significance",0),
+      makeQ("Challenge","Call a person who's shaped who you are today and thank them",0),
+      makeQ("Challenge","Share a memory where you felt completely at peace",0),
+      makeQ("Challenge","Share a quote or saying that resonates deeply with you, and explain why.",0),
+      makeQ("Challenge","Describe an experience where you truly felt love.",0),
+      makeQ("Challenge","Tell a story about a time you had to forgive someone.",0),
+      makeQ("Challenges","Ask for one thing you want tonight: comfort, laughter, depth, or romance.",1),
+      makeQ("Challenges","Describe your favorite memory together in 30 seconds like it’s a movie scene.",0),
+      makeQ("Challenges","Share one thing you find attractive about the other person’s mind.",1),
+      makeQ("Challenges","Do a ‘pause and breathe’ together: 5 slow breaths.",0),
+      makeQ("Challenges","Compliment the way your partner handles something difficult.",0),
+      makeQ("Challenges","Make a 1-sentence promise for the next week you can actually keep.",1),
+      makeQ("Challenges","Say one thing you want to explore together (a place, hobby, or habit).",0),
+      makeQ("Challenges","If spicy is allowed: share one flirtatious compliment with a straight face.",2),
+      makeQ("Challenges","If spicy is allowed: describe a perfect kiss scene (PG-13).",2),
+      makeQ("Challenges","If spicy is allowed: agree on one ‘tonight maybe’ idea (no pressure).",2),
+      makeQ("Challenges","If spicy is allowed: share one thing that turns you on that isn’t physical.",2),
+      makeQ("Challenges","If spicy is allowed: ask for what you want using a single sentence.",2),
+    ];
+
+    const CHALLENGES = [...LEGACY_CHALLENGES, ...CHALLENGES_GENERATED];
+
+    // Combined pool by level selector
+    const POOLS = {
+      ice: ICE_BREAKERS,
+      confess: CONFESSIONS,
+      deep: GOING_DEEP,
+      challenge: CHALLENGES,
+      all: [...ICE_BREAKERS, ...CONFESSIONS, ...GOING_DEEP, ...CHALLENGES]
+    };
+
+    /***********************************************************************
+     * STABLE ID
+     * - Each card has stable id keyed from category + text (hash).
+     * - Answers saved per id.
+     ***********************************************************************/
+    function hashString(str){
+      // simple deterministic hash -> base36
+      let h = 2166136261;
+      for(let i=0;i<str.length;i++){
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      // force unsigned
+      return (h >>> 0).toString(36);
+    }
+    function stableId(q){
+      return `${q.category}:${hashString(q.category + "|" + q.text)}`;
+    }
+
+    /***********************************************************************
+     * STATE
+     ***********************************************************************/
+    const state = {
+      settings: {
+        mode: "Group",
+        level: "ice",
+        drawMethod: "random",
+        allowSpicy: true,
+        spicyMax: 1,
+        avoidRepeats: true,
+        logSession: true,
+      },
+      // history stack: [{ card, settingsSnapshot, shownAt, spicyEffective, ... }]
+      history: [],
+      index: -1,
+      seenIds: new Set(),
+      // answers: { [id]: { text, updatedAt, createdAt } }
+      answers: {},
+      // session log
+      log: [],
+      sessionStartedAt: new Date().toISOString(),
+      sessionId: crypto.randomUUID ? crypto.randomUUID() : ("sess_" + Math.random().toString(16).slice(2))
+    };
+
+    /***********************************************************************
+     * ELEMENTS
+     ***********************************************************************/
+    const el = {
+      settingsToggle: document.getElementById("settingsToggle"),
+      settingsToggleText: document.getElementById("settingsToggleText"),
+      settingsPanel: document.getElementById("settingsPanel"),
+
+      mode: document.getElementById("mode"),
+      level: document.getElementById("level"),
+      drawMethod: document.getElementById("drawMethod"),
+      spicyRange: document.getElementById("spicyRange"),
+      allowSpicy: document.getElementById("allowSpicy"),
+      avoidRepeats: document.getElementById("avoidRepeats"),
+      logSession: document.getElementById("logSession"),
+
+      allowSpicyState: document.getElementById("allowSpicyState"),
+      avoidRepeatsState: document.getElementById("avoidRepeatsState"),
+      logSessionState: document.getElementById("logSessionState"),
+
+      resetSession: document.getElementById("resetSession"),
+
+      backBtn: document.getElementById("backBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+
+      card: document.getElementById("card"),
+      questionText: document.getElementById("questionText"),
+      questionSub: document.getElementById("questionSub"),
+      chipLevel: document.getElementById("chipLevel"),
+      chipCategory: document.getElementById("chipCategory"),
+      chipSpicy: document.getElementById("chipSpicy"),
+      chipCount: document.getElementById("chipCount"),
+
+      statusLine: document.getElementById("statusLine"),
+      poolLine: document.getElementById("poolLine"),
+
+      answerWrap: document.getElementById("answerWrap"),
+      answerBox: document.getElementById("answerBox"),
+
+      exportBtn: document.getElementById("exportBtn"),
+      modalBack: document.getElementById("modalBack"),
+      exportPre: document.getElementById("exportPre"),
+      closeModal: document.getElementById("closeModal"),
+      copyExport: document.getElementById("copyExport"),
+      downloadExport: document.getElementById("downloadExport"),
+    };
+
+    /***********************************************************************
+     * HELPERS
+     ***********************************************************************/
+    function prettyLevelName(level){
+      switch(level){
+        case "ice": return "Ice Breakers";
+        case "confess": return "Confessions";
+        case "deep": return "Going Deep";
+        case "challenge": return "Challenges";
+        case "all": return "Mixed";
+        default: return level;
+      }
+    }
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function currentPool(){
+      const lvl = state.settings.level;
+      const pool = POOLS[lvl] || [];
+      return pool;
+    }
+
+    function filteredPool(){
+      const pool = currentPool();
+      const { allowSpicy, spicyMax } = state.settings;
+
+      return pool.filter(q => {
+        const spicyOk = allowSpicy ? (q.spicyLevel <= spicyMax) : (q.spicyLevel === 0);
+        return spicyOk;
+      });
+    }
+
+    function pickSequential(){
+      const pool = filteredPool();
+      if(pool.length === 0) return null;
+
+      // deterministic order within pool; but respect avoid repeats if possible
+      // We'll iterate from a session pointer based on log length.
+      const startIndex = state.log.length % pool.length;
+
+      if(!state.settings.avoidRepeats) return pool[startIndex];
+
+      // Find first not-seen from startIndex forward
+      for(let i=0;i<pool.length;i++){
+        const q = pool[(startIndex + i) % pool.length];
+        const id = stableId(q);
+        if(!state.seenIds.has(id)) return q;
+      }
+      // If all seen, just return startIndex
+      return pool[startIndex];
+    }
+
+    function pickRandom(){
+      const pool = filteredPool();
+      if(pool.length === 0) return null;
+
+      if(!state.settings.avoidRepeats){
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      // Prefer unseen; if none, allow repeats
+      const unseen = pool.filter(q => !state.seenIds.has(stableId(q)));
+      const list = unseen.length ? unseen : pool;
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function drawNextQuestion(){
+      const method = state.settings.drawMethod;
+      const q = (method === "sequential") ? pickSequential() : pickRandom();
+      return q;
+    }
+
+    function snapshotSettings(){
+      return JSON.parse(JSON.stringify(state.settings));
+    }
+
+    function nowIso(){ return new Date().toISOString(); }
+
+    function pushCard(q){
+      const id = stableId(q);
+      const entry = {
+        id,
+        card: q,
+        settingsSnapshot: snapshotSettings(),
+        shownAt: nowIso(),
+      };
+
+      // Truncate forward history if user had gone back then draws new
+      if(state.index < state.history.length - 1){
+        state.history = state.history.slice(0, state.index + 1);
+      }
+      state.history.push(entry);
+      state.index = state.history.length - 1;
+
+      if(state.settings.avoidRepeats) state.seenIds.add(id);
+      if(state.settings.logSession){
+        state.log.push({
+          id,
+          shownAt: entry.shownAt,
+          category: q.category,
+          spicyLevel: q.spicyLevel,
+          text: q.text
+        });
+      }
+    }
+
+    function currentEntry(){
+      if(state.index < 0 || state.index >= state.history.length) return null;
+      return state.history[state.index];
+    }
+
+    function updateSoloUI(){
+      const solo = state.settings.mode === "solo";
+      el.answerWrap.classList.toggle("show", solo);
+
+      if(!solo){
+        el.answerBox.value = "";
+        return;
+      }
+
+      const entry = currentEntry();
+      if(!entry){
+        el.answerBox.value = "";
+        return;
+      }
+
+      const ans = state.answers[entry.id];
+      el.answerBox.value = ans ? ans.text : "";
+    }
+
+    function render(){
+      const entry = currentEntry();
+      const poolAll = currentPool();
+      const poolFiltered = filteredPool();
+
+      el.chipLevel.innerHTML = `<strong>Level</strong>: ${prettyLevelName(state.settings.level)}`;
+      el.poolLine.textContent = `Pool: ${poolFiltered.length}/${poolAll.length}`;
+
+      el.allowSpicyState.textContent = state.settings.allowSpicy ? "On" : "Off";
+      el.avoidRepeatsState.textContent = state.settings.avoidRepeats ? "On" : "Off";
+      el.logSessionState.textContent = state.settings.logSession ? "On" : "Off";
+
+      el.backBtn.disabled = state.index <= 0;
+      el.statusLine.textContent = entry ? `Showing ${state.index + 1} of ${state.history.length}` : "Ready";
+
+      if(!entry){
+        el.questionText.textContent = "Tap Next to begin.";
+        el.questionSub.textContent = "Adjust settings to begin - Random is the default draw method. You can swipe left/right too.";
+        el.chipCategory.innerHTML = `<strong>Category</strong>: —`;
+        el.chipSpicy.style.display = "none";
+        el.chipCount.innerHTML = `<strong>Card</strong>: 0`;
+        updateSoloUI();
+        return;
+      }
+
+      const q = entry.card;
+
+      el.questionText.textContent = q.text;
+      el.questionSub.textContent =
+        (state.settings.mode === "solo")
+          ? "Solo mode: your answer is saved per card and included in Export Session."
+          : "";
+
+      el.chipCategory.innerHTML = `<strong>Category</strong>: ${q.category}`;
+      el.chipCount.innerHTML = `<strong>Card</strong>: ${state.index + 1}`;
+
+      if(q.spicyLevel > 0){
+        el.chipSpicy.style.display = "";
+        el.chipSpicy.innerHTML = `<strong>Spicy</strong>: ${q.spicyLevel}`;
+      } else {
+        el.chipSpicy.style.display = "none";
+      }
+
+      updateSoloUI();
+    }
+
+    /***********************************************************************
+     * NAVIGATION (history stack)
+     * - Next: if there is forward history, move forward; else draw new.
+     * - Back: go back exactly (no re-randomize).
+     ***********************************************************************/
+    function next(){
+      // If we previously went back, allow forward navigation like a browser
+      if(state.index < state.history.length - 1){
+        state.index++;
+        render();
+        return;
+      }
+
+      const q = drawNextQuestion();
+      if(!q){
+        el.questionText.textContent = "No questions match your filters.";
+        el.questionSub.textContent = "Try enabling spicy, raising the spicy max, or switching Level to Mixed.";
+        return;
+      }
+      pushCard(q);
+      render();
+    }
+
+    function back(){
+      if(state.index > 0){
+        state.index--;
+        render();
+      }
+    }
+
+    /***********************************************************************
+     * SOLO ANSWERS
+     * - Only in Solo mode.
+     * - Each card gets answer keyed by stable id.
+     * - Export includes answers + timestamps + question data.
+     ************************************************************/
+
+    function saveAnswer(text){
+      const entry = currentEntry();
+      if(!entry) return;
+
+      const id = entry.id;
+      const now = nowIso();
+
+      if(!state.answers[id]){
+        state.answers[id] = {
+          text,
+          createdAt: now,
+          updatedAt: now,
+          question: entry.card
+        };
+      } else {
+        state.answers[id].text = text;
+        state.answers[id].updatedAt = now;
+      }
+    }
+
+    el.answerBox.addEventListener("input", e => {
+      if(state.settings.mode !== "solo") return;
+      saveAnswer(e.target.value);
+    });
+
+    /***********************************************************************
+     * SETTINGS + CONTROLS
+     ***********************************************************************/
+    el.settingsToggle.addEventListener("click", () => {
+      const open = el.settingsPanel.classList.toggle("open");
+      el.settingsToggle.setAttribute("aria-expanded", open);
+      el.settingsToggleText.textContent = open ? "Hide Settings" : "Show Settings";
+    });
+
+    el.mode.addEventListener("change", () => {
+      state.settings.mode = el.mode.value;
+      render();
+    });
+
+    el.level.addEventListener("change", () => {
+      state.settings.level = el.level.value;
+      render();
+    });
+
+    el.drawMethod.addEventListener("change", () => {
+      state.settings.drawMethod = el.drawMethod.value;
+    });
+
+    el.spicyRange.addEventListener("input", () => {
+      state.settings.spicyMax = Number(el.spicyRange.value);
+      render();
+    });
+
+    el.allowSpicy.addEventListener("change", () => {
+      state.settings.allowSpicy = el.allowSpicy.checked;
+      render();
+    });
+
+    el.avoidRepeats.addEventListener("change", () => {
+      state.settings.avoidRepeats = el.avoidRepeats.checked;
+    });
+
+    el.logSession.addEventListener("change", () => {
+      state.settings.logSession = el.logSession.checked;
+    });
+
+    el.resetSession.addEventListener("click", () => {
+      if(!confirm("Reset session and clear history?")) return;
+
+      state.history = [];
+      state.index = -1;
+      state.seenIds.clear();
+      state.answers = {};
+      state.log = [];
+      render();
+    });
+
+    /***********************************************************************
+     * NAV BUTTONS
+     ***********************************************************************/
+    el.nextBtn.addEventListener("click", next);
+    el.backBtn.addEventListener("click", back);
+
+    /***********************************************************************
+     * SWIPE SUPPORT (card)
+     ***********************************************************************/
+    let startX = null;
+
+    el.card.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+
+    el.card.addEventListener("touchend", e => {
+      if(startX === null) return;
+      const dx = e.changedTouches[0].clientX - startX;
+      startX = null;
+
+      if(Math.abs(dx) < 40) return;
+      dx < 0 ? next() : back();
+    });
+
+    /***********************************************************************
+     * EXPORT SESSION
+     ***********************************************************************/
+    function buildExport(){
+      return {
+        sessionId: state.sessionId,
+        startedAt: state.sessionStartedAt,
+        exportedAt: nowIso(),
+        settings: state.settings,
+        history: state.history,
+        answers: state.answers,
+        log: state.log
+      };
+    }
+
+    el.exportBtn.addEventListener("click", () => {
+      const data = buildExport();
+      el.exportPre.textContent = JSON.stringify(data, null, 2);
+      el.modalBack.classList.add("open");
+    });
+
+    el.closeModal.addEventListener("click", () => {
+      el.modalBack.classList.remove("open");
+    });
+
+    el.copyExport.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(el.exportPre.textContent);
+        alert("Copied to clipboard");
+      } catch {
+        alert("Copy failed");
+      }
+    });
+
+    el.downloadExport.addEventListener("click", () => {
+      const blob = new Blob([el.exportPre.textContent], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `going-deep-session-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    /***********************************************************************
+     * INIT
+     ***********************************************************************/
+    render();
+  </script>
+</body>
+</html>
+
