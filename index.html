@@ -19,6 +19,43 @@
       --radius: 18px;
     }
     *{box-sizing:border-box}
+/* Ambient bokeh background layer */
+body::before{
+  content: "";
+  position: fixed;
+  inset: -12%;
+  z-index: -1;
+  background:
+    radial-gradient(40vmax 40vmax at 20% 30%, rgba(120,90,255,.18), transparent 60%),
+    radial-gradient(35vmax 35vmax at 80% 20%, rgba(0,220,255,.15), transparent 60%),
+    radial-gradient(30vmax 30vmax at 70% 80%, rgba(255,120,200,.12), transparent 60%),
+    #0b0c10;
+  filter: blur(2px);
+  animation:
+    bokehDrift 120s ease-in-out infinite alternate,
+    hueCycle 240s linear infinite;
+  will-change: transform, filter;
+}
+
+/* Slow spatial movement */
+@keyframes bokehDrift{
+  0%{ transform: translate(0,0) scale(1); }
+  50%{ transform: translate(-2%,1%) scale(1.02); }
+  100%{ transform: translate(2%,-1%) scale(1); }
+}
+
+/* Very slow color breathing */
+@keyframes hueCycle{
+  from{ filter: blur(2px) hue-rotate(0deg); }
+  to{ filter: blur(2px) hue-rotate(360deg); }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce){
+  body::before{
+    animation: none;
+  }
+}
     html,body{height:100%}
     body{
       margin:0;
@@ -193,7 +230,8 @@
       padding: 6px 0 90px; /* leave room for bottom nav */
     }
     .card{
-      width:min(860px, 100%);
+      width: 100%;
+      max-width: 860px;
       border-radius: var(--radius);
       background: linear-gradient(180deg, rgba(18,20,32,.85), rgba(15,17,26,.75));
       border: 1px solid rgba(37,42,58,.9);
@@ -282,7 +320,7 @@
       z-index:20;
     }
     .navinner{
-      width: min(860px, 100%);
+
       display:flex;
       gap:10px;
       align-items:center;
@@ -300,7 +338,7 @@
       align-items:center;
       gap:10px;
       transition: transform .08s ease, border-color .12s ease, background .12s ease;
-      min-width: 120px;
+      min-width: clamp(88px, 28vw, 120px);
       justify-content:center;
     }
     .btn:hover{border-color: rgba(124,92,255,.7)}
@@ -323,36 +361,11 @@
       flex-direction:column;
       align-items:center;
       gap:2px;
-      min-width: 160px;
+      min-width: clamp(100px, 32vw, 160px);
       text-align:center;
     }
 
-    /* Export button bottom-right */
-    .exportFab{
-      position: fixed;
-      right: 14px;
-      bottom: calc(86px + env(safe-area-inset-bottom)); /* above bottom nav */
-      z-index: 30;
-    }
-    .fab{
-      border:1px solid rgba(37,42,58,.95);
-      background: rgba(18,20,32,.80);
-      border-radius: 999px;
-      padding: 12px 14px;
-      box-shadow: 0 16px 40px rgba(0,0,0,.45);
-      cursor:pointer;
-      user-select:none;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:900;
-    }
-    .fab:hover{border-color: rgba(32,201,151,.75)}
-    .fab .icon{
-      width:10px;height:10px;border-radius:99px;background: var(--accent2);
-      box-shadow: 0 0 0 3px rgba(32,201,151,.16);
-    }
-
+    
     /* Modal */
     .modalBack{
       position:fixed; inset:0;
@@ -365,7 +378,8 @@
     }
     .modalBack.open{display:flex}
     .modal{
-      width: min(860px, 100%);
+      width: 100%;
+      max-width: 860px;
       border-radius: 18px;
       border:1px solid rgba(37,42,58,.95);
       background: rgba(18,20,32,.92);
@@ -403,7 +417,8 @@
 
     /* Hint bar */
     .hint{
-      width:min(860px, 100%);
+            width: 100%;
+      max-width: 860px;
       color: var(--muted);
       font-size:12px;
       text-align:center;
@@ -460,11 +475,11 @@
               <div class="field">
                 <div class="label">Level</div>
                 <select id="level">
-                  <option value="ice" selected>Level 1 — Ice Breakers</option>
+                  <option value="ice">Level 1 — Ice Breakers</option>
                   <option value="confess">Level 2 — Confessions</option>
                   <option value="deep">Level 3 — Going Deep</option>
                   <option value="challenge">Wild — Challenges</option>
-                  <option value="all">All (Mixed)</option>
+                  <option value="all" selected>All (Mixed)</option>
                 </select>
               </div>
 
@@ -482,7 +497,7 @@
             <div class="row">
               <div class="field">
                 <div class="label">Spicy intensity (max allowed)</div>
-                <input id="spicyRange" type="range" min="0" max="3" value="1" />
+                <input id="spicyRange" type="range" min="0" max="3" value="3" />
                 <div class="tiny">0 = none • 1 = mild • 2 = medium • 3 = high</div>
               </div>
               <div class="field">
@@ -512,13 +527,18 @@
             <div style="height:10px"></div>
 
             <div class="row">
-              <button class="btn small" id="resetSession" type="button">
-                Reset Session
-              </button>
-              <div class="tiny">
-                Tip: swipe back and forth to navigate questions.
-              </div>
-            </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap">
+    <button class="btn small" id="resetSession" type="button">
+      Reset Session
+    </button>
+    <button class="btn small" id="exportBtn" type="button">
+      Export Session
+    </button>
+  </div>
+  <div class="tiny">
+    Tip: swipe back and forth to navigate questions.
+  </div>
+</div>
           </div>
 
           <div class="panel">
@@ -531,7 +551,12 @@
             </div>
             <div style="height:10px"></div>
             <div class="tiny" style="line-height:1.45; color: rgba(233,236,241,.9)">
-              My hope is that these moments spark conversations that go beyond the surface—conversations that leave you feeling more understood, more open, and more connected than before.
+              My hope is that these moments spark conversations that go beyond the surface—conversations that leave you feeling more understood, more open, and more connected than before.<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
+		<br/>
             </div>
           </div>
         </div>
@@ -570,13 +595,7 @@
       </div>
     </main>
 
-    <div class="exportFab">
-      <button class="fab" id="exportBtn" type="button" title="Export Session">
-        <span class="icon" aria-hidden="true"></span>
-        Export Session
-      </button>
-    </div>
-
+    
     <nav class="bottomnav" aria-label="Navigation">
       <div class="navinner">
         <button class="btn" id="backBtn" type="button" disabled>← Back</button>
@@ -595,7 +614,7 @@
   <div class="modalBack" id="modalBack" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="modal">
       <div class="modalHead">
-        <h3 id="modalTitle">Export Session (JSON)</h3>
+        <h3 id="modalTitle">Export Session</h3>
         <div class="modalActions">
           <button class="btn small" id="copyExport" type="button">Copy</button>
           <button class="btn small" id="downloadExport" type="button">Download</button>
@@ -605,7 +624,18 @@
       <div class="tiny" style="color: var(--muted); line-height:1.45">
         Includes: settings, shown-card log, and (Solo) answers keyed by stable id with timestamps.
       </div>
-      <pre id="exportPre"></pre>
+      <textarea id="exportPre" readonly style="
+  width:100%;
+  min-height:42vh;
+  background: rgba(11,12,16,.55);
+  border:1px solid rgba(37,42,58,.85);
+  border-radius:14px;
+  padding:12px;
+  color:rgba(233,236,241,.95);
+  font-size:13px;
+  line-height:1.4;
+"></textarea>
+
     </div>
   </div>
 
@@ -1183,10 +1213,10 @@
     const state = {
       settings: {
         mode: "Group",
-        level: "ice",
+        level: "all",
         drawMethod: "random",
         allowSpicy: true,
-        spicyMax: 1,
+        spicyMax: 3,
         avoidRepeats: true,
         logSession: true,
       },
@@ -1546,6 +1576,22 @@
     el.backBtn.addEventListener("click", back);
 
     /***********************************************************************
+     * BOKEH PARALLAX (driven by swipe)
+     ***********************************************************************/
+    	let bokehX = 0;
+
+    	function moveBokeh(dx){
+    	  bokehX += dx * 0.03;
+    	  bokehX = Math.max(-40, Math.min(40, bokehX));
+
+    	  document.body.style.setProperty(
+    	    "--bokeh-shift",
+	    `translateX(${bokehX}px)`
+          );
+        }
+
+
+    /***********************************************************************
      * SWIPE SUPPORT (card)
      ***********************************************************************/
     let startX = null;
@@ -1560,56 +1606,105 @@
       startX = null;
 
       if(Math.abs(dx) < 40) return;
-      dx < 0 ? next() : back();
-    });
+       // Background motion should NEVER block navigation
+    	  try {
+    	    moveBokeh(dx);
+  	    } catch (err) {
+    	    console.warn("Bokeh move failed:", err);
+    	  }
+
+      	dx < 0 ? next() : back();
+})
 
     /***********************************************************************
      * EXPORT SESSION
      ***********************************************************************/
-    function buildExport(){
-      return {
-        sessionId: state.sessionId,
-        startedAt: state.sessionStartedAt,
-        exportedAt: nowIso(),
-        settings: state.settings,
-        history: state.history,
-        answers: state.answers,
-        log: state.log
-      };
+    function buildReadableExport(){
+  let output = "";
+
+  state.history.forEach((entry, index) => {
+    const q = entry.card;
+    const answer = state.answers[entry.id]?.text;
+
+    output += `Question Asked:\n${q.text}\n\n`;
+
+    if (answer && answer.trim()) {
+      output += `Answer:\n${answer}\n\n`;
     }
 
-    el.exportBtn.addEventListener("click", () => {
-      const data = buildExport();
-      el.exportPre.textContent = JSON.stringify(data, null, 2);
-      el.modalBack.classList.add("open");
-    });
+    output += "----------------------\n\n";
+  });
+
+  return output.trim();
+}
+
+el.exportBtn.addEventListener("click", () => {
+  el.exportPre.value = buildReadableExport();
+  el.modalBack.classList.add("open");
+});
+
 
     el.closeModal.addEventListener("click", () => {
       el.modalBack.classList.remove("open");
     });
 
     el.copyExport.addEventListener("click", async () => {
-      try{
-        await navigator.clipboard.writeText(el.exportPre.textContent);
-        alert("Copied to clipboard");
-      } catch {
-        alert("Copy failed");
-      }
-    });
+  try {
+    await navigator.clipboard.writeText(el.exportPre.value);
+    alert("Copied to clipboard");
+  } catch {
+    alert("Copy failed");
+  }
+});
 
-    el.downloadExport.addEventListener("click", () => {
-      const blob = new Blob([el.exportPre.textContent], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `going-deep-session-${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
+el.downloadExport.addEventListener("click", () => {
+  const blob = new Blob([el.exportPre.value], { type: "text/plain" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `going-deep-session-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
 
     /***********************************************************************
      * INIT
      ***********************************************************************/
     render();
+    /***********************************************************************
+     * BACKGROUND PARALLAX (Swipe-driven)
+     ***********************************************************************/
+    	let bgOffsetX = 0;
+    	let bgOffsetY = 0;
+
+    	function updateBokehTransform(){
+      	document.body.style.setProperty(
+        	"--bokeh-transform",
+        	`translate(${bgOffsetX}px, ${bgOffsetY}px)`
+      );
+    }
+
+// Apply transform via CSS variable
+const style = document.createElement("style");
+style.textContent = `
+  body::before{
+    transform: var(--bokeh-transform);
+  }
+`;
+document.head.appendChild(style);
+
+// Hook into your existing swipe handling
+function onSwipe(dx, dy){
+  bgOffsetX += dx * 0.02;
+  bgOffsetY += dy * 0.02;
+
+  // Clamp movement so it stays subtle
+  bgOffsetX = Math.max(-30, Math.min(30, bgOffsetX));
+  bgOffsetY = Math.max(-30, Math.min(30, bgOffsetY));
+
+  updateBokehTransform();
+}
+
   </script>
 </body>
 </html>
